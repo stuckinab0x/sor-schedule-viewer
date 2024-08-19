@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import { useSheets } from '../contexts/sheets-provider';
 import Nav from './Nav';
 import InstructorFilterBar from './InstructorFilterBar';
@@ -7,9 +7,10 @@ import SheetsList from './SheetsList';
 import ScheduleColumn from './ScheduleColumn';
 import DayPicker from './DayPicker';
 import Settings from './Settings';
+import GlobalStyle from '../styles/global-style';
 
 const Container: FC = () => {
-  const { worksheets, currentSheet, instructorFilter, days, day } = useSheets();
+  const { worksheets, currentSheet, instructorFilter, days, day, userTheme } = useSheets();
   const [mobileShowSheetPicker, setMobileShowSheetPicker] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -32,23 +33,26 @@ const Container: FC = () => {
   }, [day, days, instructorFilter]);
 
   return (
-    <ContainerMain>
-      <Nav toggleSettings={ () => setShowSettings(!showSettings) } />
-      { showSettings && <Settings /> }
-      { worksheets && <ContentMain>
-        { !showSettings && <SheetsList mobileShow={ mobileShowSheetPicker } mobileClose={ () => setMobileShowSheetPicker(false) } /> }
-        { ! showSettings && <ScheduleContainer $mobileShow={ !mobileShowSheetPicker }>
-          <InstructorFilterBar />
-          <CurrentSheet onClick={ () => setMobileShowSheetPicker(true) }>{ currentSheet ? currentSheet.a1SheetName.slice(1, -1) : 'No sheet selected' }</CurrentSheet>
-          <DayPicker />
-          { instructorMatches.length > 1 && <MultiNotify>Multiple matches for instructor found</MultiNotify> }
-          <ScheduleColumn />
-          { currentSheet && !instructorFilter.length && <ErrorNotify>No instructor name entered</ErrorNotify> }
-          { currentSheet && instructorFilter && !instructorMatches.length && <ErrorNotify>No match for instructor found</ErrorNotify> }
-        </ScheduleContainer> }
-      </ContentMain> }
-      { !worksheets && <PendingNotify>Waiting for Google...</PendingNotify> }
-    </ContainerMain>
+    <ThemeProvider theme={ userTheme }>
+      <ContainerMain>
+        <GlobalStyle />
+        <Nav toggleSettings={ () => setShowSettings(!showSettings) } />
+        { showSettings && <Settings /> }
+        { worksheets && <ContentMain>
+          { !showSettings && <SheetsList mobileShow={ mobileShowSheetPicker } mobileClose={ () => setMobileShowSheetPicker(false) } /> }
+          { ! showSettings && <ScheduleContainer $mobileShow={ !mobileShowSheetPicker }>
+            <InstructorFilterBar />
+            <CurrentSheet onClick={ () => setMobileShowSheetPicker(true) }>{ currentSheet ? currentSheet.a1SheetName.slice(1, -1) : 'No sheet selected' }</CurrentSheet>
+            <DayPicker />
+            { instructorMatches.length > 1 && <MultiNotify>Multiple matches for instructor found</MultiNotify> }
+            <ScheduleColumn />
+            { currentSheet && !instructorFilter.length && <ErrorNotify>No instructor name entered</ErrorNotify> }
+            { currentSheet && instructorFilter && !instructorMatches.length && <ErrorNotify>No match for instructor found</ErrorNotify> }
+          </ScheduleContainer> }
+        </ContentMain> }
+        { !worksheets && <PendingNotify>Waiting for Google...</PendingNotify> }
+      </ContainerMain>
+    </ThemeProvider>
   );
 };
 
@@ -88,7 +92,7 @@ const ScheduleContainer = styled.div<ScheduleContainerStyleProps>`
 
 const CurrentSheet = styled.h1`
   font-size: 3rem;
-  background-color: #46466f;
+  background-color: ${ props => props.theme.colors.accentMain };
   margin: 0;
   width: 100%;
   padding: 8px 16px;
@@ -105,7 +109,7 @@ const CurrentSheet = styled.h1`
   }
 
   @media only screen and (max-width: 600px) {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
 
   @media only screen and (min-width: 1200px) {
@@ -120,7 +124,7 @@ const PendingNotify = styled.h1`
 `;
 
 const ErrorNotify = styled.h1`
-  background-color: #552727;
+  background-color: ${ props => props.theme.colors.error };
   margin: 20px;
   padding: 2px 10px;
   border-radius: 4px;
@@ -129,8 +133,8 @@ const ErrorNotify = styled.h1`
 `;
 
 const MultiNotify = styled(ErrorNotify)`
-  background-color: #e89445;
-  margin: 0 10px 4px;
+  background-color: ${ props => props.theme.colors.warn };
+  margin: 4px 10px;
 `;
 
 export default Container;

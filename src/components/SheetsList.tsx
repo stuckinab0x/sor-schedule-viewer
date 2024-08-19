@@ -33,7 +33,7 @@ const SheetsListMain = styled.div<StyleProps>`
 
   > h1 {
     cursor: pointer;
-    background-color: grey;
+    background-color: ${ props => props.theme.colors.inactive };
     margin: 4px 2px;
     padding: 2px;
     border-radius: 4px;

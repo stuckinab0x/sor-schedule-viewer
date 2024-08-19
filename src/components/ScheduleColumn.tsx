@@ -40,6 +40,7 @@ const ColumnMain = styled.div`
 
 const Tile = styled.div`
   display: flex;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
 
   > h1 {
     display: flex;
@@ -49,10 +50,10 @@ const Tile = styled.div`
     width: 50%;
     margin: 2px;
     border-radius: 6px;
-    background-color: #212129;
+    background-color: ${ props => props.theme.colors.accentDark };;
 
     &:first-child {
-      background-color: #46466f;
+      background-color: ${ props => props.theme.colors.accentMain };
     }
 
     @media only screen and (max-width: 800px) {

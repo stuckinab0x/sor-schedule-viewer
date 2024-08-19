@@ -38,7 +38,7 @@ const FilterBarMain = styled.div`
 
   span, h1:nth-child(2) {
       color: inherit;
-      background-color: #46466f;
+      background-color: ${ props => props.theme.colors.accentMain };
       border-radius: 4px;
       cursor: pointer;
       margin: 0 8px;

@@ -2,10 +2,25 @@ import { FC, createContext, useContext, ReactNode, useMemo, useState, useEffect,
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { months } from '../constants';
 import Day from '../models/day';
-import { days as dayNames } from '../constants';
+// import { days as dayNames } from '../constants';
 import UserSettings from '../models/user-settings';
+import themes from '../styles/themes';
+import { DefaultTheme } from 'styled-components/dist/types';
 
-const loadedSettings = localStorage.getItem('sor-schedule-ui_userSettings');
+const getSettings: () => UserSettings = () => {
+  const loaded = localStorage.getItem('sor-schedule-ui_userSettings');
+  if (!loaded)
+    return { defaultLoadCurrentDay: false, defaultLoadFirstSheet: false, theme: 'Blue' };
+
+  const parsed = JSON.parse(loaded);
+
+  return {
+    defaultLoadCurrentDay: parsed.defaultLoadCurrentDay ?? false,
+    defaultLoadFirstSheet: parsed.defaultLoadFirstSheet ?? false,
+    theme: parsed.theme || 'Blue',
+  };
+};
+
 const today = new Date().getDay();
 
 interface SheetsContextProps {
@@ -21,6 +36,7 @@ interface SheetsContextProps {
   setDay: (dayIndex: number) => void;
   userSettings: UserSettings;
   setUserSettings: React.Dispatch<SetStateAction<UserSettings>>;
+  userTheme: DefaultTheme;
 }
 
 const SheetsContext = createContext<SheetsContextProps | null>(null);
@@ -48,7 +64,7 @@ const SheetsProvider: FC<SheetsProviderProps> = ({ children }) => {
   const [currGridSize, setCurrGridSize] = useState({ rows: 0, cols: 0 });
   const [parsedColumns, setParsedColumns] = useState<string[][]>([]);
 
-  const [userSettings, setUserSettings] = useState<UserSettings>(loadedSettings ? JSON.parse(loadedSettings) : { defaultLoadCurrentDay: false, defaultLoadFirstSheet: false });
+  const [userSettings, setUserSettings] = useState<UserSettings>(getSettings());
 
   const [day, setDay] = useState(0);
 
@@ -102,9 +118,9 @@ const SheetsProvider: FC<SheetsProviderProps> = ({ children }) => {
   const days = useMemo(() => {
     if (!parsedColumns.length || !instructorFilter)
       return undefined;
-
-    const startIndecies = dayNames.map(x => parsedColumns[0].findIndex(row => row?.toString().includes(x))).filter(x => x >= 0);
-    const parsed: Day[] = startIndecies
+    const startIndicies = [0, 18, 36, 54, 73, 92, 110];
+    // const startIndicies = dayNames.map(x => parsedColumns[0].findIndex(row => row?.toString().includes(x))).filter(x => x >= 0);
+    const parsed: Day[] = startIndicies
       .map((x, i, self) => ({ name: parsedColumns[0][x]?.toString() || 'error', times: parsedColumns[0].slice(x, self[i + 1]), lessons: parsedColumns.map(column => column.slice(x, self[i + 1]).map((slot, slotIndex) => slotIndex === 0 ? '$emptyCell' : slot)) }))
       .map(x => {
         const possibleLastTimes = ['9:00', '9', '8:30', '8:00', '8'];
@@ -114,6 +130,8 @@ const SheetsProvider: FC<SheetsProviderProps> = ({ children }) => {
 
     return parsed;
   }, [parsedColumns, instructorFilter]);
+
+  const userTheme = useMemo(() =>  themes.find(x => x.name === userSettings.theme) || themes[0], [userSettings.theme]);
 
 
   const context = useMemo(() => ({
@@ -129,6 +147,7 @@ const SheetsProvider: FC<SheetsProviderProps> = ({ children }) => {
     setDay,
     userSettings,
     setUserSettings,
+    userTheme,
   }), [
     worksheets,
     sheetNames,
@@ -141,6 +160,7 @@ const SheetsProvider: FC<SheetsProviderProps> = ({ children }) => {
     day, setDay,
     userSettings,
     setUserSettings,
+    userTheme
   ]);
 
   return (

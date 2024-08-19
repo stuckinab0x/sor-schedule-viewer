@@ -18,7 +18,7 @@ const NavMain = styled.div`
   justify-content: space-between;
   width: 100%;
   padding: 4px 8px;
-  background-color: #38384a;
+  background-color: ${ props => props.theme.colors.nav };
   box-sizing: border-box;
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
   
